@@ -1,76 +1,99 @@
 #include <stdio.h>
 
-int main() {
-    int tabuleiro[10][10];
-    int i, j;
+#define TAM_TABULEIRO 10
+#define TAM_HABILIDADE 5
 
-    // Inicializa o tabuleiro com 0 (água)
-    for (i = 0; i < 10; i++) {
-        for (j = 0; j < 10; j++) {
-            tabuleiro[i][j] = 0;
+void inicializar_tabuleiro(int tab[TAM_TABULEIRO][TAM_TABULEIRO]) {
+    for (int i = 0; i < TAM_TABULEIRO; i++) {
+        for (int j = 0; j < TAM_TABULEIRO; j++) {
+            tab[i][j] = 0;
         }
     }
+}
 
-    // ===== NAVIO 1: HORIZONTAL =====
-    int linhaH = 2;
-    int colunaH = 4;
-    if (colunaH + 2 < 10 &&
-        tabuleiro[linhaH][colunaH] == 0 &&
-        tabuleiro[linhaH][colunaH + 1] == 0 &&
-        tabuleiro[linhaH][colunaH + 2] == 0) {
-
-        tabuleiro[linhaH][colunaH] = 3;
-        tabuleiro[linhaH][colunaH + 1] = 3;
-        tabuleiro[linhaH][colunaH + 2] = 3;
-    }
-
-    // ===== NAVIO 2: VERTICAL =====
-    int linhaV = 5;
-    int colunaV = 1;
-    if (linhaV + 2 < 10 &&
-        tabuleiro[linhaV][colunaV] == 0 &&
-        tabuleiro[linhaV + 1][colunaV] == 0 &&
-        tabuleiro[linhaV + 2][colunaV] == 0) {
-
-        tabuleiro[linhaV][colunaV] = 3;
-        tabuleiro[linhaV + 1][colunaV] = 3;
-        tabuleiro[linhaV + 2][colunaV] = 3;
-    }
-
-    // ===== NAVIO 3: DIAGONAL PRINCIPAL =====
-    int linhaD1 = 0;
-    int colunaD1 = 0;
-    if (linhaD1 + 2 < 10 && colunaD1 + 2 < 10 &&
-        tabuleiro[linhaD1][colunaD1] == 0 &&
-        tabuleiro[linhaD1 + 1][colunaD1 + 1] == 0 &&
-        tabuleiro[linhaD1 + 2][colunaD1 + 2] == 0) {
-
-        tabuleiro[linhaD1][colunaD1] = 3;
-        tabuleiro[linhaD1 + 1][colunaD1 + 1] = 3;
-        tabuleiro[linhaD1 + 2][colunaD1 + 2] = 3;
-    }
-
-    // ===== NAVIO 4: DIAGONAL SECUNDÁRIA =====
-    int linhaD2 = 0;
-    int colunaD2 = 9;
-    if (linhaD2 + 2 < 10 && colunaD2 - 2 >= 0 &&
-        tabuleiro[linhaD2][colunaD2] == 0 &&
-        tabuleiro[linhaD2 + 1][colunaD2 - 1] == 0 &&
-        tabuleiro[linhaD2 + 2][colunaD2 - 2] == 0) {
-
-        tabuleiro[linhaD2][colunaD2] = 3;
-        tabuleiro[linhaD2 + 1][colunaD2 - 1] = 3;
-        tabuleiro[linhaD2 + 2][colunaD2 - 2] = 3;
-    }
-
-    // ===== IMPRIME O TABULEIRO =====
+// Função para imprimir o tabuleiro com símbolos
+void imprimir_tabuleiro(int tab[TAM_TABULEIRO][TAM_TABULEIRO]) {
     printf("=== Tabuleiro ===\n");
-    for (i = 0; i < 10; i++) {
-        for (j = 0; j < 10; j++) {
-            printf("%d ", tabuleiro[i][j]);
+    for (int i = 0; i < TAM_TABULEIRO; i++) {
+        for (int j = 0; j < TAM_TABULEIRO; j++) {
+            if (tab[i][j] == 0) printf("~ ");
+            else if (tab[i][j] == 3) printf("N ");
+            else if (tab[i][j] == 5) printf("* ");
         }
         printf("\n");
     }
-
-    return 0;
 }
+
+// Gera matriz de habilidade cone
+void gerar_cone(int habilidade[TAM_HABILIDADE][TAM_HABILIDADE]) {
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            habilidade[i][j] = 0;
+            if (j >= (TAM_HABILIDADE / 2 - i) && j <= (TAM_HABILIDADE / 2 + i)) {
+                habilidade[i][j] = 1;
+            }
+        }
+    }
+}
+
+// Gera matriz de habilidade cruz
+void gerar_cruz(int habilidade[TAM_HABILIDADE][TAM_HABILIDADE]) {
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            if (i == TAM_HABILIDADE / 2 || j == TAM_HABILIDADE / 2) {
+                habilidade[i][j] = 1;
+            } else {
+                habilidade[i][j] = 0;
+            }
+        }
+    }
+}
+
+// Gera matriz de habilidade octaedro
+void gerar_octaedro(int habilidade[TAM_HABILIDADE][TAM_HABILIDADE]) {
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            if (abs(i - TAM_HABILIDADE / 2) + abs(j - TAM_HABILIDADE / 2) <= TAM_HABILIDADE / 2) {
+                habilidade[i][j] = 1;
+            } else {
+                habilidade[i][j] = 0;
+            }
+        }
+    }
+}
+
+// Aplica uma habilidade no tabuleiro
+void aplicar_habilidade(int tab[TAM_TABULEIRO][TAM_TABULEIRO], int habilidade[TAM_HABILIDADE][TAM_HABILIDADE], int origem_linha, int origem_coluna) {
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            int lin = origem_linha - TAM_HABILIDADE / 2 + i;
+            int col = origem_coluna - TAM_HABILIDADE / 2 + j;
+            if (lin >= 0 && lin < TAM_TABULEIRO && col >= 0 && col < TAM_TABULEIRO && habilidade[i][j] == 1) {
+                if (tab[lin][col] == 0) {
+                    tab[lin][col] = 5; // marca área afetada
+                }
+            }
+        }
+    }
+}
+
+// Posiciona um navio se possível
+void posicionar_navio_horizontal(int tab[TAM_TABULEIRO][TAM_TABULEIRO], int lin, int col) {
+    if (col + 2 < TAM_TABULEIRO &&
+        tab[lin][col] == 0 && tab[lin][col + 1] == 0 && tab[lin][col + 2] == 0) {
+        tab[lin][col] = 3;
+        tab[lin][col + 1] = 3;
+        tab[lin][col + 2] = 3;
+    }
+}
+
+void posicionar_navio_vertical(int tab[TAM_TABULEIRO][TAM_TABULEIRO], int lin, int col) {
+    if (lin + 2 < TAM_TABULEIRO &&
+        tab[lin][col] == 0 && tab[lin + 1][col] == 0 && tab[lin + 2][col] == 0) {
+        tab[lin][col] = 3;
+        tab[lin + 1][col] = 3;
+        tab[lin + 2][col] = 3;
+    }
+}
+
+void posicionar_navio_diagonal_principal(int tab[TAM_TABULEIRO][TAM_TABULEIRO], int lin, int col)_
